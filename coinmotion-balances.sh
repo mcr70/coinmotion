@@ -17,12 +17,16 @@ time=$(date +%s)
 body='{"nonce":"'$time'"}'
 signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
 
-curl -s -X POST -H "Content-Type: application/json" \
+RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
              -H "X-COINMOTION-APIKEY: $APIKEY" \
              -H "X-COINMOTION-SIGNATURE: $signature" \
        -d "$body" \
-       https://api.coinmotion.com/v1/balances \
-       | jq '.payload | with_entries( select(.key|contains("_bal") ))'
-#| jq .payload | grep _bal
+       https://api.coinmotion.com/v1/balances)
+
+if [ `echo $RESULT | jq .success` == "true" ]; then
+  echo $RESULT | jq '.payload | with_entries( select(.key|contains("_bal") ))'
+else
+  echo $RESULT | jq .
+fi
 
 ###
