@@ -13,10 +13,6 @@ if [ -z $APIKEY ]; then
   exit 1
 fi
 
-# Create a signature to be used in API calls
-time=$(date +%s)
-body='{"nonce":"'$time'"}'
-signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
 
 
 function usage {
@@ -33,6 +29,11 @@ function usage {
 
 # Get the balances of all the crypto wallets
 function balances {
+  # Create a signature to be used in API call
+  time=$(date +%s)
+  body='{"nonce":"'$time'"}'
+  signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
+
   RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
               -H "X-COINMOTION-APIKEY: $APIKEY" \
               -H "X-COINMOTION-SIGNATURE: $signature" \
@@ -52,7 +53,20 @@ function buy {
 }
 
 function sell {
-  echo sell
+  # Create a signature to be used in API call
+  time=$(date +%s)
+  body='{"nonce": "'$time'", "currency_code": "'$1'", "amount_cur": "'$2'"}'
+  signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
+
+  echo $body
+
+  RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
+              -H "X-COINMOTION-APIKEY: $APIKEY" \
+              -H "X-COINMOTION-SIGNATURE: $signature" \
+        -d "$body" \
+        https://api.coinmotion.com/v1/sell)
+
+  echo $RESULT | jq .
 }
 
 # Get the buy and sell rates of different crypto currencies
@@ -90,10 +104,10 @@ case $1 in
     balances
     ;;
   buy)
-    buy
+    buy $2 $3
     ;;
   sell)
-    sell
+    sell $2 $3
     ;;
   rates)
     rates
