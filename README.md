@@ -1,2 +1,2 @@
-# coinmotion
-Set of bash scripts to interact with Coinmotion
+# coinmotion.sh
+A script to interact with Coinmotion [API](https://api.coinmotion.com/docs/apicoinmotion.html)
