@@ -13,10 +13,6 @@ if [ -z $APIKEY ]; then
   exit 1
 fi
 
-# Create a signature to be used in API calls
-time=$(date +%s)
-body='{"nonce":"'$time'"}'
-signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
 
 
 function usage {
@@ -26,13 +22,18 @@ function usage {
   echo "  crypto currencies, or get the value of crypto wallets"
   echo "    $ $(basename $0) rates"
   echo "    $ $(basename $0) balances"
-  echo "    $ $(basename $0) buy"
-  echo "    $ $(basename $0) sell"
+  echo "    $ $(basename $0) buy <crypto> <amount_in_cents>"
+  echo "    $ $(basename $0) sell <crypto> <amount_in_cents>"
   echo "    $ $(basename $0) values"
 }
 
 # Get the balances of all the crypto wallets
 function balances {
+  # Create a signature to be used in API call
+  time=$(date +%s)
+  body='{"nonce":"'$time'"}'
+  signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
+
   RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
               -H "X-COINMOTION-APIKEY: $APIKEY" \
               -H "X-COINMOTION-SIGNATURE: $signature" \
@@ -48,11 +49,33 @@ function balances {
 }
 
 function buy {
-  echo buy
+  # Create a signature to be used in API call
+  time=$(date +%s)
+  body='{"nonce": "'$time'", "currency_code": "'$1'", "amount_cur": "'$2'"}'
+  signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
+
+  RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
+              -H "X-COINMOTION-APIKEY: $APIKEY" \
+              -H "X-COINMOTION-SIGNATURE: $signature" \
+        -d "$body" \
+        https://api.coinmotion.com/v1/buy)
+
+  echo $RESULT | jq .
 }
 
 function sell {
-  echo sell
+  # Create a signature to be used in API call
+  time=$(date +%s)
+  body='{"nonce": "'$time'", "currency_code": "'$1'", "amount_cur": "'$2'"}'
+  signature=$(echo -n $body | openssl dgst -sha512 -hmac $APISECRET)
+
+  RESULT=$(curl -s -X POST -H "Content-Type: application/json" \
+              -H "X-COINMOTION-APIKEY: $APIKEY" \
+              -H "X-COINMOTION-SIGNATURE: $signature" \
+        -d "$body" \
+        https://api.coinmotion.com/v1/sell)
+
+  echo $RESULT | jq .
 }
 
 # Get the buy and sell rates of different crypto currencies
@@ -90,10 +113,10 @@ case $1 in
     balances
     ;;
   buy)
-    buy
+    buy $2 $3
     ;;
   sell)
-    sell
+    sell $2 $3
     ;;
   rates)
     rates
