@@ -24,11 +24,11 @@ function usage {
   echo "  Use following commands to get the balances of crypto wallets, "
   echo "  buy or sell crypto currencies, get the buying and selling rates of"
   echo "  crypto currencies, or get the value of crypto wallets"
+  echo "    $ $(basename $0) rates"
   echo "    $ $(basename $0) balances"
   echo "    $ $(basename $0) buy"
   echo "    $ $(basename $0) sell"
-  echo "    $ $(basename $0) rates"
-  echo "    $ $(basename $0) value"
+  echo "    $ $(basename $0) values"
 }
 
 # Get the balances of all the crypto wallets
@@ -62,7 +62,7 @@ function rates {
 }
 
 # Print the value of different crypto wallets, and calculate total
-function value {
+function values {
   rates=$(rates)
   balances=$(balances)
 
@@ -98,8 +98,8 @@ case $1 in
   rates)
     rates
     ;;
-  value)
-    value
+  values)
+    values
     ;;
   *)
     usage
